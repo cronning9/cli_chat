@@ -1,0 +1,14 @@
+{
+  "name": "cl_chat",
+  "version": "0.0.1",
+  "description": "A simple chat server to be accessed via terminal",
+  "main": "index.js",
+  "author": "Chris Ronning",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^0.8.5",
+    "express": "^4.13.4",
+    "mongoose": "^4.4.12",
+    "morgan": "^1.7.0"
+  }
+}
