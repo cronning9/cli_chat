@@ -1,17 +1,21 @@
 'use strict';
 
-/* COMMAND LINE CHAT SERVER */
-// This is a basic proof of concept so far
+const http = require('http');
 
-// require dependencies
-const express =  require('express');
-const app =      express();
-const mongoose = require('mongoose');
-const morgan =   require('morgan');
+const host = "http://localhost:8000/";
+const stdin = process.stdin, stdout = process.stdout;
 
-const User = require('.app/models/user');
-const port = process.env.PORT || 8000;
+http.get(host, function(res) {
+  res.on('data', function(chunk) {
+    stdout.write(chunk);
+    res.resume();
+  });
+}).on('error', function(err) {
+  console.log('ERROR: ' + err);
+});
 
+
+/*
 
 // Helper function to ask the user a question and accept input with stdin
 function acceptInput(question, callback) {
@@ -27,6 +31,7 @@ function acceptInput(question, callback) {
 }
 
 // Sample to allow the user to create a username and login
+// TODO get this to interface with the User model
 acceptInput("Select a username", function(name) {
   let username = name;
   if (users[username]) {
@@ -35,15 +40,14 @@ acceptInput("Select a username", function(name) {
       console.log("Hey you signed in, " + username);
     });
   } else {
-    acceptInput("I see that you are a new user.\nCreate a password", 
+    acceptInput("I see that you are a new user.\nCreate a password",
         function(password) {
           users[username] = {};
           users[username].username = username;
           users[username].password = password;
-          
+
           console.log(users);
           process.exit(0);
         });
   }
-});
-
+});*/
