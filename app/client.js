@@ -1,8 +1,10 @@
 'use strict';
 
 const http = require('http');
+const request = require('request');
 
-const host = "http://localhost:8000/";
+const config = "../config.js";
+const host = "http://localhost:8000";
 
 const stdin = process.stdin, stdout = process.stdout;
 const prompt = '\n> ';
@@ -35,46 +37,42 @@ function acceptInput(question, callback) {
   });
 }
 
-// replace client shit with server responses
+// PROBLEM
+// While userInfo waits for input, request gets called with a blank 
+// body in options. This gets sent to the server, breaking it.
 function newUser() {
-  acceptInput("Select a username", function(name) {
-    
-    let userInfo = acceptInput("Select a username", function(input) {
-      let username = input;
-      acceptInput("Select a password", function(input) {
-        let password = input;
-      });
+  let userInfo = acceptInput("Select a username", function(username) {
+
+    acceptInput("Select a password", function(password) {
+
       return { 'username' : username,
                'password' : password };
     });
-    // TODO insert userInfo into post request to create new user
-    http.request(options, function(res) {
+  });
 
-    });
-    // if the user already exists
-    if (users[name]) {
-
-      // this will be replaced by server request
-      let response = stdout.write("This username already exists.\n" +
-                                  "To login with this username, type `login`.\n" +
-                                  "To try another name, enter `new`.");
-      acceptInput(response, function(input) {
-        // login with this name
-        if (input == 'login') {
-          login(name);
-        // try a different username
-        } else if (input == 'new') {
-          newUser();
-        }
-      });
+  let options = {
+    uri: host + '/users',
+    method: 'POST',
+    headers: {
+      'Content-Type' : 'application/json'
+    },
+    body: userInfo
+  };
+  
+  // TODO insert userInfo into post request to create new user
+  request(options, function(error, response, body) {
+    if (error) {
+      console.log('Error:' + error);
+    } else if (response.statusCode != 200) {
+      console.log("Invalid request")
+    } else {
+      console.log(body);
     }
-    // create new user here
-    
-  })
+  });
 }
 // Sample to allow the user to create a username and login
 // TODO make this work
-function login(user) {
+/*function login(user) {
   acceptInput("Select a username", function (name) {
     let users = {};
     let username = name;
@@ -96,4 +94,4 @@ function login(user) {
           });
     }
   });
-}
+}*/

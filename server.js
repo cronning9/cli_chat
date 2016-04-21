@@ -19,7 +19,6 @@ let welcome = "-----Welcome to CLI CHAT-----\n" +
 mongoose.connect(config.database);
 
 app.get('/', function(req, res) {
-  console.log(req.body);
   res.send(welcome);
   
 });
@@ -27,20 +26,24 @@ app.get('/', function(req, res) {
 app.route('/users')
     // create a new user
     .post(function(req, res) {
+      let body = JSON.parse(req.body);
       let user = new User();
       
-      user.username = req.body.username;
-      user.password = req.body.password;
+      user.username = body.username;
+      user.password = body.password;
       
       user.save(function(err) {
-        if (err.code == 11000) {
-          res.send("This username already exists.\n" +
-              "To login with this username, type `login`.\n" +
-              "To try another name, enter `new`."); 
+        if (err) {
+          if (err.code == 11000) {
+            res.send("This username already exists.\n" +
+                "To login with this username, type `login`.\n" +
+                "To try another name, enter `new`.");
+          } else {
+            res.send(err);
+          }
         }
-          
-        
-      })
+        res.send("User" + user.username + "created.")
+      });
     });
 
 app.listen(config.port, function() {
