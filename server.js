@@ -22,15 +22,16 @@ mongoose.connect(config.database);
 // express middleware to handle http post requests
 app.use(bodyParser.json());
 
+// home route to test
 app.get('/', function(req, res) {
   res.send(welcome);
   
 });
 
+// actions on the /users route
 app.route('/users')
     // create a new user
     .post(function(req, res) {
-      console.log(req.body);
       let body = req.body;
       let user = new User();
       
@@ -40,18 +41,19 @@ app.route('/users')
       user.save(function(err) {
         if (err) {
           if (err.code == 11000) {
-            res.send("This username already exists.\n" +
+            res.send(401, "This username already exists.\n" +
                 "To login with this username, type `login`.\n" +
                 "To try another name, enter `new`.");
           } else {
             res.send(err);
           }
+        } else {
+          res.send("User " + user.username + " created.")
         }
-        res.send("User " + user.username + " created.")
       });
     });
 
-
+// ladies and gentlemen, start your engines!
 app.listen(config.port, function() {
   console.log('Listening on port 8000...');
 });

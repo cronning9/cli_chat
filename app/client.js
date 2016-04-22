@@ -9,6 +9,9 @@ const host = "http://localhost:8000";
 const stdin = process.stdin, stdout = process.stdout;
 const prompt = '\n> ';
 
+// TODO figure out proper else condition on line 21 and 68
+
+
 http.get(host, function(res) {
   res.on('data', function(chunk) {
     let response = stdout.write(chunk);
@@ -17,7 +20,7 @@ http.get(host, function(res) {
         newUser();
       } else if (input == 'login') {
         login();
-      }
+      } // need to figure out proper else condition
     });
     
   });
@@ -42,7 +45,6 @@ function newUser() {
 
   acceptInput("Select a username", function(username) {
     acceptInput("Select a password", function(password) {
-      console.log(username + " > " + password);
       let options = {
         uri: host + '/users',
         method: 'POST',
@@ -57,9 +59,16 @@ function newUser() {
       };
 
       request(options, function (error, response, body) {
-        console.log(options);
         if (error) {
-          console.log(Error(error));
+          console.log(Error(error) + response.statusCode);
+        } else if (response.statusCode == 401) {
+          acceptInput(stdout.write(body), function(input) {
+            if (input == 'new') {
+              newUser();
+            } else if (input == 'login') {
+              login();
+            } // need to figure out proper else condition
+          })
         } else if (response.statusCode != 200) {
           console.log(Error("Invalid request: " + response.statusCode))
         } else {
@@ -70,44 +79,7 @@ function newUser() {
   });
   
 }
-// THIS WILL NOT WORK
-// TODO: make it work
-/*function newUser() {
-  let userInfo = Promise(function(reject, resolve) {
 
-    acceptInput("Select a username", function(username) {
-
-      acceptInput("Select a password", function(password) {
-
-        return { 'username' : username,
-          'password' : password };
-
-      });
-    });
-    let options = {
-      uri: host + '/users',
-      method: 'POST',
-      headers: {
-        'Content-Type' : 'application/json'
-      },
-      body: userInfo
-    };
-    reject(console.log("something went wrong"));
-
-    resolve(return options);
-  };
-
-  userInfo.then(request(options, function(error, response, body) {
-    if (error) {
-      console.log('Error:' + error);
-    } else if (response.statusCode != 200) {
-      console.log("Invalid request")
-    } else {
-      console.log(body);
-    }
-  }));
-
-}*/
 // Sample to allow the user to create a username and login
 // TODO make this work
 /*function login(user) {
