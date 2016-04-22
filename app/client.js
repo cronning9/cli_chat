@@ -31,36 +31,38 @@ function acceptInput(question, callback) {
   stdin.resume();
   stdout.write(question + prompt);
 
-  stdin.once('data', function(data) {
+  stdin.once('data', function (data) {
     let input = data.toString().trim();
     callback(input);
   });
 }
-
-// PROBLEM
-// While userInfo waits for input, request gets called with a blank 
-// body in options. This gets sent to the server, breaking it.
+// THIS WILL NOT WORK
+// TODO: make it work
 function newUser() {
-  let userInfo = acceptInput("Select a username", function(username) {
+  let userInfo = Promise(function(reject, resolve) {
 
-    acceptInput("Select a password", function(password) {
+    acceptInput("Select a username", function(username) {
 
-      return { 'username' : username,
-               'password' : password };
+      acceptInput("Select a password", function(password) {
+
+        return { 'username' : username,
+          'password' : password };
+      });
     });
-  });
+    let options = {
+      uri: host + '/users',
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application/json'
+      },
+      body: userInfo
+    };
+    reject(console.log("something went wrong"));
 
-  let options = {
-    uri: host + '/users',
-    method: 'POST',
-    headers: {
-      'Content-Type' : 'application/json'
-    },
-    body: userInfo
+    resolve(return options);
   };
-  
-  // TODO insert userInfo into post request to create new user
-  request(options, function(error, response, body) {
+
+  userInfo.then(request(options, function(error, response, body) {
     if (error) {
       console.log('Error:' + error);
     } else if (response.statusCode != 200) {
@@ -68,7 +70,8 @@ function newUser() {
     } else {
       console.log(body);
     }
-  });
+  }));
+
 }
 // Sample to allow the user to create a username and login
 // TODO make this work
