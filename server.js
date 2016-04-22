@@ -6,6 +6,7 @@
 // require dependencies
 const express =  require('express');
 const app =      express();
+const bodyParser = require("body-parser");
 const mongoose = require('mongoose');
 const morgan =   require('morgan');
 
@@ -18,6 +19,9 @@ let welcome = "-----Welcome to CLI CHAT-----\n" +
 
 mongoose.connect(config.database);
 
+// express middleware to handle http post requests
+app.use(bodyParser.json());
+
 app.get('/', function(req, res) {
   res.send(welcome);
   
@@ -26,7 +30,8 @@ app.get('/', function(req, res) {
 app.route('/users')
     // create a new user
     .post(function(req, res) {
-      let body = JSON.parse(req.body);
+      console.log(req.body);
+      let body = req.body;
       let user = new User();
       
       user.username = body.username;
@@ -42,9 +47,10 @@ app.route('/users')
             res.send(err);
           }
         }
-        res.send("User" + user.username + "created.")
+        res.send("User " + user.username + " created.")
       });
     });
+
 
 app.listen(config.port, function() {
   console.log('Listening on port 8000...');

@@ -36,9 +36,43 @@ function acceptInput(question, callback) {
     callback(input);
   });
 }
+
+function newUser() {
+  // define options with a blank body to be defined shortly
+
+  acceptInput("Select a username", function(username) {
+    acceptInput("Select a password", function(password) {
+      console.log(username + " > " + password);
+      let options = {
+        uri: host + '/users',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: {
+          'username': username,
+          'password': password
+        },
+        json: true
+      };
+
+      request(options, function (error, response, body) {
+        console.log(options);
+        if (error) {
+          console.log(Error(error));
+        } else if (response.statusCode != 200) {
+          console.log(Error("Invalid request: " + response.statusCode))
+        } else {
+          console.log(body);
+        }
+      });
+    });
+  });
+  
+}
 // THIS WILL NOT WORK
 // TODO: make it work
-function newUser() {
+/*function newUser() {
   let userInfo = Promise(function(reject, resolve) {
 
     acceptInput("Select a username", function(username) {
@@ -47,6 +81,7 @@ function newUser() {
 
         return { 'username' : username,
           'password' : password };
+
       });
     });
     let options = {
@@ -72,7 +107,7 @@ function newUser() {
     }
   }));
 
-}
+}*/
 // Sample to allow the user to create a username and login
 // TODO make this work
 /*function login(user) {
