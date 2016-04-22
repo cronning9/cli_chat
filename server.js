@@ -22,7 +22,7 @@ mongoose.connect(config.database);
 // express middleware to handle http post requests
 app.use(bodyParser.json());
 
-// home route to test
+//  home route -- initial exposed route
 app.get('/', function(req, res) {
   res.send(welcome);
   

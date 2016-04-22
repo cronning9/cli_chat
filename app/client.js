@@ -12,21 +12,26 @@ const prompt = '\n> ';
 // TODO figure out proper else condition on line 21 and 68
 
 
-http.get(host, function(res) {
-  res.on('data', function(chunk) {
-    let response = stdout.write(chunk);
-    acceptInput(response, function(input) {
+function begin() {
+  request(host, function(error, response, body) {
+    
+    acceptInput(body, function(input) {
       if (input == 'new') {
         newUser();
       } else if (input == 'login') {
         login();
-      } // need to figure out proper else condition
+      } else if (error) {
+        console.log(Error(err));
+      } else {
+          // if user input is invalid, start over
+          console.log("Invalid entry");
+          begin();
+      }
     });
-    
   });
-}).on('error', function(err) {
-  console.log('ERROR: ' + err);
-});
+}
+
+begin();
 
 // Helper function to ask the user a question and accept input with stdin
 function acceptInput(question, callback) {
@@ -68,7 +73,7 @@ function newUser() {
             } else if (input == 'login') {
               login();
             } // need to figure out proper else condition
-          })
+          });
         } else if (response.statusCode != 200) {
           console.log(Error("Invalid request: " + response.statusCode))
         } else {
