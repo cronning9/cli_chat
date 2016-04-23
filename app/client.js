@@ -11,26 +11,26 @@ const prompt = '\n> ';
 
 // TODO figure out proper else condition on line 21 and 68
 
-
+// opening request -- wrapped in function to allow recursion
+// in case of invalid input
 function begin() {
-  request(host, function(error, response, body) {
-    
-    acceptInput(body, function(input) {
-      if (input == 'new') {
-        newUser();
-      } else if (input == 'login') {
-        login();
-      } else if (error) {
-        console.log(Error(err));
+  request(host, function (error, response, body) {
+
+    acceptInput(body, function (input) {
+      let handlers = {
+        'new': newUser(),
+        'login': null
+      };
+
+      if (input in handlers) {
+        return handlers[input];
       } else {
-          // if user input is invalid, start over
-          console.log("Invalid entry");
-          begin();
+        console.log("Invalid entry");
+        begin();
       }
     });
   });
 }
-
 begin();
 
 // Helper function to ask the user a question and accept input with stdin
@@ -67,12 +67,25 @@ function newUser() {
         if (error) {
           console.log(Error(error) + response.statusCode);
         } else if (response.statusCode == 401) {
+          // -------
+          /*
+          The following chunk is going to happen frequently, with different 
+          possible inputs. Maybe alter acceptInput, or create another helper
+          function to pass it through.
+          // TODO figure out potential way to store a general-purpose question function
+           -------*/
           acceptInput(stdout.write(body), function(input) {
-            if (input == 'new') {
-              newUser();
-            } else if (input == 'login') {
-              login();
-            } // need to figure out proper else condition
+            let handlers = {
+              'new': newUser(),
+              'login': null
+            };
+
+            if (input in handlers) {
+              return handlers[input];
+            } else {
+              console.log("Invalid entry");
+              begin();
+            }
           });
         } else if (response.statusCode != 200) {
           console.log(Error("Invalid request: " + response.statusCode))
