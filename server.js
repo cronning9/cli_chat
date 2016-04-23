@@ -21,6 +21,8 @@ mongoose.connect(config.database);
 
 // express middleware to handle http post requests
 app.use(bodyParser.json());
+// morgan middleware for logging
+app.use(morgan('dev'));
 
 //  home route -- initial exposed route
 app.get('/', function(req, res) {
