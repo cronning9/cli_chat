@@ -1,3 +1,6 @@
+// ------------------------
+// TODO Move this to a ./public/app folder
+// TODO set login stuff into ./public/app/controller
 'use strict';
 
 const http = require('http');
@@ -13,25 +16,30 @@ const prompt = '\n> ';
 
 // opening request -- wrapped in function to allow recursion
 // in case of invalid input
-function begin() {
+function begin(host) {
   request(host, function (error, response, body) {
 
     acceptInput(body, function (input) {
+      // perhaps this should eventually be moved to global scope to be called
+      // in various functions
       let handlers = {
-        'new': newUser(),
-        'login': null
+        'new': newUser,
+        'login': login
       };
 
       if (input in handlers) {
-        return handlers[input];
+        handlers[input]();
+        
       } else {
         console.log("Invalid entry");
-        begin();
+        begin(host);
       }
     });
   });
 }
-begin();
+
+// begin with request to host
+begin(host);
 
 // Helper function to ask the user a question and accept input with stdin
 function acceptInput(question, callback) {
@@ -66,37 +74,43 @@ function newUser() {
       request(options, function (error, response, body) {
         if (error) {
           console.log(Error(error) + response.statusCode);
+          
         } else if (response.statusCode == 401) {
-          // -------
-          /*
-          The following chunk is going to happen frequently, with different 
-          possible inputs. Maybe alter acceptInput, or create another helper
-          function to pass it through.
-          // TODO figure out potential way to store a general-purpose question function
-           -------*/
+          
           acceptInput(body, function(input) {
             let handlers = {
-              'new': newUser(),
+              'new': newUser,
               'login': null
             };
 
             if (input in handlers) {
-              return handlers[input];
+              handlers[input]();
+              begin();
             } else {
               console.log("Invalid entry");
               begin();
             }
           });
+          
         } else if (response.statusCode != 200) {
-          console.log(Error("Invalid request: " + response.statusCode))
+          console.log(Error("Invalid request: " + response.statusCode));
+          
         } else {
           console.log(body);
+          // enter chat from here
+          process.exit(0);
         }
       });
     });
   });
   
 }
+
+function login() {
+  console.log("Login function");
+  begin(host);
+}
+
 
 // Sample to allow the user to create a username and login
 // TODO make this work
