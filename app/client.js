@@ -74,7 +74,7 @@ function newUser() {
           function to pass it through.
           // TODO figure out potential way to store a general-purpose question function
            -------*/
-          acceptInput(stdout.write(body), function(input) {
+          acceptInput(body, function(input) {
             let handlers = {
               'new': newUser(),
               'login': null
