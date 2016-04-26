@@ -14,3 +14,8 @@ Written with `'use strict'` to allow for cool ES6 syntax.
 
 On the off chance that anybody looks at this and finds a bug and/or wants to change something, feel free to
 create a new Issue or make a PR.
+
+#### Note About ".idea"
+This is a bunch of formatting folders that Webstorm automatically
+creates, and for some reason i can't get it to stay excluded from the 
+repo. If you pull from here, feel free to delete that nonsense.
