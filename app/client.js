@@ -24,7 +24,8 @@ function begin(host) {
       // in various functions
       let handlers = {
         'new': newUser,
-        'login': login
+        'login': login,
+        'quit': exit
       };
 
       if (input in handlers) {
@@ -74,13 +75,15 @@ function newUser() {
       request(options, function (error, response, body) {
         if (error) {
           console.log(Error(error) + response.statusCode);
+          process.exit(1);
           
         } else if (response.statusCode == 401) {
           
           acceptInput(body, function(input) {
             let handlers = {
               'new': newUser,
-              'login': null
+              'login': null,
+              'quit': exit
             };
 
             if (input in handlers) {
@@ -93,7 +96,8 @@ function newUser() {
           });
           
         } else if (response.statusCode != 200) {
-          console.log(Error("Invalid request: " + response.statusCode));
+          console.log(Error(error + response.statusCode));
+          process.exit(1);
           
         } else {
           console.log(body);
@@ -111,6 +115,10 @@ function login() {
   begin(host);
 }
 
+function exit() {
+  console.log("Goodbye!");
+  process.exit(0);
+}
 
 // Sample to allow the user to create a username and login
 // TODO make this work
