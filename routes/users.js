@@ -29,7 +29,40 @@ module.exports = function() {
         }
       });
     });
-  
+
+  // route to authenticate a user at .../users/authenticate
+  userRouter.post('/authenticate', function(req, res) {
+    User.findOne({
+      username: req.body.username
+    }).select('username password').exec(function(err, user) {
+      if (err) throw err;
+      
+      // invalid username
+      if (!user) {
+        res.json({
+          success: false,
+          message: 'User not found.'
+        });
+      } else if (user) {
+        // check if password match
+        let validPassword = user.comparePassword(req.body.password);
+        if (!validPassword) {
+          res.json({
+            success: false,
+            message: 'Login failed. Wrong password.'
+          });
+        } else {
+          
+          // password match
+          res.json({
+            success: true,
+            message: 'Login successful!'
+          });
+        }
+      }
+    })
+  });
+
   return userRouter;
   
 };
