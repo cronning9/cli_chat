@@ -1,6 +1,3 @@
-// ------------------------
-// TODO Move this to a ./public/app folder
-// TODO set login stuff into ./public/app/controller
 'use strict';
 
 const http = require('http');
@@ -12,7 +9,8 @@ const host = "http://localhost:8000";
 const stdin = process.stdin, stdout = process.stdout;
 const prompt = '\n> ';
 
-// TODO figure out proper else condition on line 21 and 68
+// logged-in status is stored on the client.
+let loggedIn = false;
 
 // opening request -- wrapped in function to allow recursion
 // in case of invalid input
@@ -55,8 +53,7 @@ function acceptInput(question, callback) {
 }
 
 function newUser() {
-  // define options with a blank body to be defined shortly
-
+  
   acceptInput("Select a username", function(username) {
     acceptInput("Select a password", function(password) {
       let options = {
@@ -74,35 +71,33 @@ function newUser() {
 
       request(options, function (error, response, body) {
         if (error) {
-          console.log(Error(error) + response.statusCode);
-          process.exit(1);
+          console.log(Error("Entry invalid") + response.statusCode);
+          exit(1);
           
         } else if (response.statusCode == 401) {
           
           acceptInput(body, function(input) {
             let handlers = {
               'new': newUser,
-              'login': null,
+              'login': login,
               'quit': exit
             };
 
             if (input in handlers) {
               handlers[input]();
-              begin();
             } else {
               console.log("Invalid entry");
-              begin();
             }
           });
           
         } else if (response.statusCode != 200) {
           console.log(Error(error + response.statusCode));
-          process.exit(1);
+          exit(1);
           
         } else {
           console.log(body);
           // enter chat from here
-          process.exit(0);
+          exit();
         }
       });
     });
@@ -111,37 +106,56 @@ function newUser() {
 }
 
 function login() {
-  console.log("Login function");
-  begin(host);
-}
 
-function exit() {
-  console.log("Goodbye!");
-  process.exit(0);
-}
+  // ask for username and password
+  acceptInput("Enter your username", function(username) {
+    acceptInput("Enter your password", function(password) {
+      let options = {
+        uri: host + '/users/authenticate',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: {
+          'username': username,
+          'password': password
+        },
+        json: true
+      };
+      
+      request(options, function(error, response, body) {
 
-// Sample to allow the user to create a username and login
-// TODO make this work
-/*function login(user) {
-  acceptInput("Select a username", function (name) {
-    let users = {};
-    let username = name;
-    if (users[username]) {
-      acceptInput("Enter password", function (password) {
-        //authentication will happen here
-        console.log("Hey you signed in, " + username);
-      });
-    } else {
-      acceptInput("I see that you are a new user.\nCreate a password",
-          function (password) {
-            console.log("roger that, logged in");
-            users[username] = {};
-            users[username].username = username;
-            users[username].password = password;
+        if (error) { console.log(Error("Invalid request" + error.statusCode)); }
+      
+        if (response.body.success == false) {
+          console.log(body.message);
+          acceptInput("Maybe consider signing up with a new username.\n" +
+                      "To do that, enter `new`.\n" +
+                      "To continue trying to log in, type `login`", function(input) {
+            let handlers = {
+              'new': newUser,
+              'login': login,
+              'quit': exit
+            };
 
-            console.log(users);
-            process.exit(0);
+            if (input in handlers) {
+              handlers[input]();
+            } else {
+              console.log("Invalid entry");
+            }
           });
-    }
+        } else {
+          loggedIn = true;
+          console.log(body.message);
+          // will move to chat from here
+          exit(0);
+        }
+      });
+    });
   });
-}*/
+}
+
+function exit(code) {
+  console.log("Goodbye!");
+  process.exit(code);
+}

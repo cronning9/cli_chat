@@ -32,9 +32,8 @@ module.exports = function() {
 
   // route to authenticate a user at .../users/authenticate
   userRouter.post('/authenticate', function(req, res) {
-    User.findOne({
-      username: req.body.username
-    }).select('username password').exec(function(err, user) {
+    User.findOne({ username: req.body.username },
+        'username password', function(err, user) {
       if (err) throw err;
       
       // invalid username
