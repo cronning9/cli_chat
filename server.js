@@ -11,7 +11,7 @@ const mongoose = require('mongoose');
 const morgan =   require('morgan');
 
 const config = require('./config');
-const userRouter = require('./routes/users')(app, express);
+const loginRouter = require('./routes/users')(app, express);
 
 let welcome = "-----Welcome to CLI CHAT-----\n" +
               "If you are a new user, enter `new`.\n" +
@@ -32,7 +32,7 @@ app.get('/', function(req, res) {
 });
 
 // users route
-app.use('/users', userRouter);
+app.use('/users', loginRouter);
 
 // ladies and gentlemen, start your engines!
 app.listen(config.port, function() {

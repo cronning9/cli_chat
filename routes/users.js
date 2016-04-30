@@ -4,9 +4,9 @@ const User = require('../app/models/user');
 const express = require('express');
 
 module.exports = function() {
-  const userRouter = express.Router();
+  const loginRouter = express.Router();
   
-  userRouter.route('/')
+  loginRouter.route('/')
       // create a new user
     .post(function(req, res) {
       let body = req.body;
@@ -31,7 +31,7 @@ module.exports = function() {
     });
 
   // route to authenticate a user at .../users/authenticate
-  userRouter.post('/authenticate', function(req, res) {
+  loginRouter.post('/authenticate', function(req, res) {
     User.findOne({ username: req.body.username },
         'username password', function(err, user) {
       if (err) throw err;
@@ -62,6 +62,6 @@ module.exports = function() {
     })
   });
 
-  return userRouter;
+  return loginRouter;
   
 };

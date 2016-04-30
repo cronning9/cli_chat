@@ -12,34 +12,7 @@ const prompt = '\n> ';
 // logged-in status is stored on the client.
 let loggedIn = false;
 
-// opening request -- wrapped in function to allow recursion
-// in case of invalid input
-function begin(host) {
-  request(host, function (error, response, body) {
-
-    acceptInput(body, function (input) {
-      // perhaps this should eventually be moved to global scope to be called
-      // in various functions
-      let handlers = {
-        'new': newUser,
-        'login': login,
-        'quit': exit
-      };
-
-      if (input in handlers) {
-        handlers[input]();
-        
-      } else {
-        console.log("Invalid entry");
-        begin(host);
-      }
-    });
-  });
-}
-
-// begin with request to host
-begin(host);
-
+// -------HELPER FUNCTIONS-------
 // Helper function to ask the user a question and accept input with stdin
 function acceptInput(question, callback) {
 
@@ -51,6 +24,35 @@ function acceptInput(question, callback) {
     callback(input);
   });
 }
+
+// Helper function to handle user input. Passes in handlers, and accepts a callback
+// to handle invalid input.
+function handleInput(input, handlers, onFail) {
+  if (input in handlers) {
+    handlers[input]();
+  } else {
+    console.log("Invalid entry");
+    onFail();
+  }
+}
+
+// -------------------------
+
+// opening request -- wrapped in function to allow recursion
+// in case of invalid input
+
+function begin() {
+  request(host, function (error, response, body) {
+    acceptInput(body, function (input) {
+      handleInput(input, {
+        'new': newUser,
+        'login': login,
+        'quit': exit
+      }, begin);
+    });
+  });
+}
+
 
 function newUser() {
   
@@ -77,19 +79,12 @@ function newUser() {
         } else if (response.statusCode == 401) {
           
           acceptInput(body, function(input) {
-            let handlers = {
+            handleInput(input, {
               'new': newUser,
               'login': login,
               'quit': exit
-            };
-
-            if (input in handlers) {
-              handlers[input]();
-            } else {
-              console.log("Invalid entry");
-            }
+            }, newUser);
           });
-          
         } else if (response.statusCode != 200) {
           console.log(Error(error + response.statusCode));
           exit(1);
@@ -132,17 +127,11 @@ function login() {
           acceptInput("Maybe consider signing up with a new username.\n" +
                       "To do that, enter `new`.\n" +
                       "To continue trying to log in, type `login`", function(input) {
-            let handlers = {
+            handleInput(input, {
               'new': newUser,
               'login': login,
               'quit': exit
-            };
-
-            if (input in handlers) {
-              handlers[input]();
-            } else {
-              console.log("Invalid entry");
-            }
+              }, begin);
           });
         } else {
           loggedIn = true;
@@ -159,3 +148,6 @@ function exit(code) {
   console.log("Goodbye!");
   process.exit(code);
 }
+
+// begin with request to host
+begin();
