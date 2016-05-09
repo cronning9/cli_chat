@@ -3,9 +3,9 @@
 const http = require('http');
 const request = require('request');
 
-const LoginClient = require('./loginClient.js');
+const Login = require('./loginStart');
 const config = require("../config.js");
 
-const session = new LoginClient;
+const login = new Login();
 
-session.begin();
+login.begin();

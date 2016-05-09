@@ -3,7 +3,6 @@
 const http = require('http');
 const request = require('request');
 
-const inputs = require('./handlers/input');
 const config = require("../config.js");
 const host = "http://localhost:" + config.port;
 
@@ -32,9 +31,21 @@ function acceptInput(question, callback) {
 
 // furthermore, session.begin() in client.js won't work unless it is defined
 // on the prototype here. This is weird. 
-var LoginClient = module.exports = function() {
-  LoginClient.loggedIn = false;
-};
+/*let LoginClient = {
+  loggedIn: false, 
+  userSession: {
+    'username': undefined,
+    'admin': false
+  }
+};*/
+
+function LoginClient() {
+  this.loggedIn = false;
+  this.userSession =  {
+    username: 'fuck',
+    admin: false
+  };
+}
 
 LoginClient.handleInput = function(input, handlers, onFail) {
   if (input in handlers) {
@@ -48,10 +59,11 @@ LoginClient.handleInput = function(input, handlers, onFail) {
   // opening request -- wrapped in function to allow recursion
   // in case of invalid input
 LoginClient.prototype.begin = function() {
+  console.log(this.userSession.username);
   request(host, function (error, response, body) {
     acceptInput(body, function (input) {
       LoginClient.handleInput(input, {
-        'new': LoginClient.newUser,
+        'new': this.newUser,
         'login': LoginClient.login,
         'quit': LoginClient.exit
       }, LoginClient.begin);
@@ -136,12 +148,15 @@ LoginClient.login = function(){
             LoginClient.handleInput(input, {
               'new': LoginClient.newUser,
               'login': LoginClient.login,
-              'quit': LoginClient.LoginClient.exit
+              'quit': LoginClient.exit
             }, LoginClient.begin);
           });
         } else {
-          console.log(LoginClient.loggedIn);
-          LoginClient.loggedIn = true;
+          console.log(this.loggedIn);
+          this.loggedIn = true;
+          this.userSession.username = options.username;
+          console.log(this.userSession);
+          console.log(this.loggedIn);
           console.log(body.message);
           // will move to chat from here
           LoginClient.exit(0);
@@ -157,3 +172,5 @@ LoginClient.exit = function(code) {
   console.log("Goodbye!");
   process.exit(code);
 };
+
+module.exports = LoginClient;
